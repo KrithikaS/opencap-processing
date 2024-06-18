@@ -1722,7 +1722,8 @@ def buildExternalFunction(filename, pathDCAD, CPP_DIR, nInputs,
         if not preferred_generator:
             raise ValueError("Generator not found. Have you installed Visual Studio with the C++ extension? See instructions: https://github.com/stanfordnmbl/opencap-processing?tab=readme-ov-file#muscle-driven-simulations")
 
-        cmd1 = 'cmake "' + pathBuildExpressionGraph + '" -G "' + preferred_generator + '" -A x64 -DTARGET_NAME:STRING="' + filename + '" -DSDK_DIR:PATH="' + SDK_DIR + '" -DCPP_DIR:PATH="' + CPP_DIR + '"'
+        # cmd1 = 'cmake "' + pathBuildExpressionGraph + '"  -A x64 -DTARGET_NAME:STRING="' + filename + '" -DSDK_DIR:PATH="' + SDK_DIR + '" -DCPP_DIR:PATH="' + CPP_DIR + '"'
+        cmd1 = 'cmake "' + pathBuildExpressionGraph + '" -G "Visual Studio 17 2022"  -A x64 -DTARGET_NAME:STRING="' + filename + '" -DSDK_DIR:PATH="' + SDK_DIR + '" -DCPP_DIR:PATH="' + CPP_DIR + '"'
         cmd2 = "cmake --build . --config RelWithDebInfo"
         
     elif os_system == 'Linux':
@@ -1815,7 +1816,8 @@ def buildExternalFunction(filename, pathDCAD, CPP_DIR, nInputs,
             generateF(nInputs, fooName)
         
         if os_system == 'Windows':
-            cmd3 = 'cmake "' + pathBuildExternalFunction + '" -G "' + preferred_generator + '" -A x64 -DTARGET_NAME:STRING="' + filename + '" -DINSTALL_DIR:PATH="' + path_external_functions_filename_install + '"'
+            # cmd3 = 'cmake "' + pathBuildExternalFunction + '" -A x64 -DTARGET_NAME:STRING="' + filename + '" -DINSTALL_DIR:PATH="' + path_external_functions_filename_install + '"'
+            cmd3 = 'cmake "' + pathBuildExternalFunction + '" -G "Visual Studio 17 2022" -A x64 -DTARGET_NAME:STRING="' + filename + '" -DINSTALL_DIR:PATH="' + path_external_functions_filename_install + '"' 
             cmd4 = "cmake --build . --config RelWithDebInfo --target install"
         elif os_system == 'Linux':
             cmd3 = 'cmake "' + pathBuildExternalFunction + '" -DTARGET_NAME:STRING="' + filename + '" -DINSTALL_DIR:PATH="' + path_external_functions_filename_install + '"'
