@@ -30,11 +30,12 @@ import glob
 import zipfile
 import platform
 import opensim
+import utilsTRC
 
 from utilsAPI import get_api_url
 from utilsAuthentication import get_token
 import matplotlib.pyplot as plt
-from scipy.signal import gaussian
+from scipy.signal import gaussian, sosfiltfilt, butter
 
 
 API_URL = get_api_url()
@@ -808,3 +809,138 @@ def downsample(data,time,framerate_in,framerate_out):
     downsampled_time = np.interp(new_indices, original_indices, time)
     
     return downsampled_time, downsampled_data
+
+def filter3DPointsButterworth(points3D,filtFreq,sampleFreq,order=4):
+    points3D_out = np.copy(points3D)
+    wn = filtFreq/(sampleFreq/2)
+    if wn>1:
+        print('You tried to filter ' + str(sampleFreq) + ' signal with cutoff freq of ' + str(filtFreq) + ', which is above the Nyquist Frequency. Will filter at ' + str(sampleFreq/2) + 'instead.')
+        wn=0.99
+    elif wn==1:
+        wn=0.99
+        
+    sos = butter(order/2,wn,btype='low',output='sos')
+    
+    for i in range(2):
+        points3D_out = sosfiltfilt(sos,points3D_out,axis=0)             
+        
+    return points3D_out
+
+def TRC2numpy(pathFile, markers,rotation=None):
+    # rotation is a dict, eg. {'y':90} with axis, angle for rotation
+    
+    trc_file = utilsTRC.TRCFile(pathFile)
+    time = trc_file.time
+    num_frames = time.shape[0]
+    data = np.zeros((num_frames, len(markers)*3))
+    
+    if rotation != None:
+        for axis,angle in rotation.items():
+            trc_file.rotate(axis,angle)
+    for count, marker in enumerate(markers):
+        data[:,3*count:3*count+3] = trc_file.marker(marker)    
+    this_dat = np.empty((num_frames, 1))
+    this_dat[:, 0] = time
+    data_out = np.concatenate((this_dat, data), axis=1)
+    
+    return data_out
+
+# %%  Found here: https://github.com/chrisdembia/perimysium/ => thanks Chris
+def storage2numpy(storage_file, excess_header_entries=0):
+    """Returns the data from a storage file in a numpy format. Skips all lines
+    up to and including the line that says 'endheader'.
+    Parameters
+    ----------
+    storage_file : str
+        Path to an OpenSim Storage (.sto) file.
+    Returns
+    -------
+    data : np.ndarray (or numpy structure array or something?)
+        Contains all columns from the storage file, indexable by column name.
+    excess_header_entries : int, optional
+        If the header row has more names in it than there are data columns.
+        We'll ignore this many header row entries from the end of the header
+        row. This argument allows for a hacky fix to an issue that arises from
+        Static Optimization '.sto' outputs.
+    Examples
+    --------
+    Columns from the storage file can be obtained as follows:
+        >>> data = storage2numpy('<filename>')
+        >>> data['ground_force_vy']
+    """
+    # What's the line number of the line containing 'endheader'?
+    f = open(storage_file, 'r')
+
+    header_line = False
+    for i, line in enumerate(f):
+        if header_line:
+            column_names = line.split()
+            break
+        if line.count('endheader') != 0:
+            line_number_of_line_containing_endheader = i + 1
+            header_line = True
+    f.close()
+
+    # With this information, go get the data.
+    if excess_header_entries == 0:
+        names = True
+        skip_header = line_number_of_line_containing_endheader
+    else:
+        names = column_names[:-excess_header_entries]
+        skip_header = line_number_of_line_containing_endheader + 1
+    data = np.genfromtxt(storage_file, names=names,
+            skip_header=skip_header)
+
+    return data
+
+def storage2df(storage_file, headers):
+    # Extract data
+    data = storage2numpy(storage_file)
+    out = pd.DataFrame(data=data['time'], columns=['time'])    
+    for count, header in enumerate(headers):
+        out.insert(count + 1, header, data[header])    
+    
+    return out
+
+def numpy2TRC(f, data, headers, fc=50.0, t_start=0.0, units="m"):
+    
+    header_mapping = {}
+    for count, header in enumerate(headers):
+        header_mapping[count+1] = header 
+        
+    # Line 1.
+    f.write('PathFileType  4\t(X/Y/Z) %s\n' % os.getcwd())
+    
+    # Line 2.
+    f.write('DataRate\tCameraRate\tNumFrames\tNumMarkers\t'
+                'Units\tOrigDataRate\tOrigDataStartFrame\tOrigNumFrames\n')
+    
+    num_frames=data.shape[0]
+    num_markers=len(header_mapping.keys())
+    
+    # Line 3.
+    f.write('%.1f\t%.1f\t%i\t%i\t%s\t%.1f\t%i\t%i\n' % (
+            fc, fc, num_frames,
+            num_markers, units, fc,
+            1, num_frames))
+    
+    # Line 4.
+    f.write("Frame#\tTime\t")
+    for key in sorted(header_mapping.keys()):
+        f.write("%s\t\t\t" % format(header_mapping[key]))
+
+    # Line 5.
+    f.write("\n\t\t")
+    for imark in np.arange(num_markers) + 1:
+        f.write('X%i\tY%s\tZ%s\t' % (imark, imark, imark))
+    f.write('\n')
+    
+    # Line 6.
+    f.write('\n')
+
+    for frame in range(data.shape[0]):
+        f.write("{}\t{:.8f}\t".format(frame+1,(frame)/fc+t_start)) # opensim frame labeling is 1 indexed
+
+        for key in sorted(header_mapping.keys()):
+            f.write("{:.5f}\t{:.5f}\t{:.5f}\t".format(data[frame,0+(key-1)*3], data[frame,1+(key-1)*3], data[frame,2+(key-1)*3]))
+        f.write("\n")
