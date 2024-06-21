@@ -54,7 +54,7 @@ filtFrequencies = {'walking': '_filt6Hz',
 
 sessionDetails = {
     'Data': {
-        'OpenCapData_S30': {}
+        'OpenCapData_S29': {}
             }
 }
 
@@ -76,10 +76,11 @@ videoParameters['0001']['originName'] = 'Trimmed_origin000001.trc'
 videoParameters['0001']['r_fromMarker_toVideoOrigin_inLab'] = np.array(
     [0, 7, 0])  # mm in lab frame # this one is for large backwall 0001
 videoParameters['0001']['R_video_opensim'] = R.from_euler('y', -90, degrees=True)
-videoParameters['0001']['R_opensim_xForward'] = R.from_euler('y', 90, degrees=True)
+# videoParameters['0001']['R_opensim_xForward'] = R.from_euler('y', 90, degrees=True) # Original
+videoParameters['0001']['R_opensim_xForward'] = R.from_euler('z', 90, degrees=True) # Original
 
 videoParameters['0002'] = {}
-videoParameters['0002']['originName'] = 'origin2.trc'
+videoParameters['0002']['originName'] = 'Trimmed_origin000002.trc'
 videoParameters['0002']['r_fromMarker_toVideoOrigin_inLab'] = np.array(
     [-7, 0, 0])  # mm in lab frame # this one is for large backwall 0001
 videoParameters['0002']['R_video_opensim'] = R.from_euler('y', 0, degrees=True)
@@ -158,9 +159,17 @@ def computeMarkerDifferences(trialName, mocapDir, videoTrcDir, markersMPJE, tria
     r_labOrigin_videoOrigin_inOpensim = R_lab_opensim.apply(r_fromLabOrigin_toVideoOrigin_inLab)
 
     for iMkr in range(videoTRC.num_markers):
+        # Original
+        # videoData[:, iMkr * 3:iMkr * 3 + 3] = R_video_opensim.apply(
+        #     videoData[:, iMkr * 3:iMkr * 3 + 3]) + r_labOrigin_videoOrigin_inOpensim
+        
         videoData[:, iMkr * 3:iMkr * 3 + 3] = R_video_opensim.apply(
+            videoData[:, iMkr * 3:iMkr * 3 + 3])
+        
+        R_tmp = R.from_euler('x', 90, degrees=True)
+        videoData[:, iMkr * 3:iMkr * 3 + 3] = R_tmp.apply(
             videoData[:, iMkr * 3:iMkr * 3 + 3]) + r_labOrigin_videoOrigin_inOpensim
-    
+         
     # Select sync algorithm that minimizes the MPJEs
     markersSync = markersMPJE
     lag_markerError_sumabs, success_sumabs = syncMarkerError(
