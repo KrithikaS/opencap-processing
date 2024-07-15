@@ -359,11 +359,16 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
                                               'ExternalFunction')
     pathIKFolder = os.path.join(pathOSData, 'Kinematics')
     # If Force/EMG/IK/ID data is available, we load it for comparison.
-    pathForceFolder = os.path.join(pathSubjectData, 'ForceData')
+    # pathForceFolder = os.path.join(pathSubjectData, 'ForceData')
     pathEMGFolder = os.path.join(pathSubjectData, 'EMGData')    
-    pathMocapFolder = os.path.join(pathSubjectData, "OpenSimDataMocap")
-    pathMocapIKFolder = os.path.join(pathMocapFolder, 'InverseKinematics')
-    pathMocapIDFolder = os.path.join(pathMocapFolder, 'InverseDynamics')
+    # pathMocapFolder = os.path.join(pathSubjectData, "OpenSimDataMocap")
+    # pathMocapIKFolder = os.path.join(pathMocapFolder, 'InverseKinematics')
+    # pathMocapIDFolder = os.path.join(pathMocapFolder, 'InverseDynamics')
+    pathMocapFolder = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\MOCAP OpenSim Pipeline\S30"
+    pathMocapIKFolder = os.path.join(pathMocapFolder, 'IK', 'Results_06_2024')
+    pathMocapIDFolder = os.path.join(pathMocapFolder, 'ID', 'Results_06_2024')
+    pathForceFolder = os.path.join(pathMocapFolder, 'Forces')
+
     # Path results and settings.
     pathResults = os.path.join(pathOSData, 'Dynamics', trialName)
     if 'repetition' in settings:
@@ -668,7 +673,9 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
     # If Force/EMG/IK/ID data is available, we load it for comparison.
     # Force (GRF and GRM)
     from utilsOpenSimAD import getGRFAll, getEMG, getID
-    pathGRFFile = os.path.join(pathForceFolder, trialName + '.mot')
+    # pathGRFFile = os.path.join(pathForceFolder, trialName + '.mot')
+    pathGRFFile = os.path.join(pathForceFolder, 'DLS000002_forces_filt4Hz' + '.mot') #HARD-CODED
+    print("pathGRFFile is hard coded - need to fix!!")
     experimental_force_data_available = False
     if os.path.exists(pathGRFFile):
         experimental_force_data_available = True
@@ -688,7 +695,9 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
         experimental_emg = interpolateDataFrame(experimental_emg_t, 
             timeIntervals[0], timeIntervals[1], N).to_numpy()[:,1::].T
     # IK
-    pathIKFileMocap = os.path.join(pathMocapIKFolder, trialName + '.mot')
+    # pathIKFileMocap = os.path.join(pathMocapIKFolder, trialName + '.mot')
+    pathIKFileMocap = os.path.join(pathMocapIKFolder, 'DLS000002_results' + '.sto') #HARD-CODED
+    print("pathIKFileMocap is hard coded - need to fix!!")
     mocap_ik_data_available = False
     if os.path.exists(pathIKFileMocap):
         mocap_ik_data_available = True
@@ -704,7 +713,9 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
             Qs_mocap_filter, timeIntervals[0], timeIntervals[1],
             N).to_numpy()[:,1::].T
     # ID
-    pathIDFile = os.path.join(pathMocapIDFolder, trialName + '.sto')
+    # pathIDFile = os.path.join(pathMocapIDFolder, trialName + '.sto')
+    pathIDFile = os.path.join(pathMocapIDFolder, 'results_DLS000002' + '.sto') #HARD-CODED
+    print("pathIDFile is hard coded - need to fix!!")
     mocap_id_data_available = False
     if os.path.exists(pathIDFile):
         mocap_id_data_available = True

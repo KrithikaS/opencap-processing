@@ -284,29 +284,54 @@ def getGRFAll(pathGRFFile, timeInterval, N):
     GRF = {        
         'headers': {
             'forces': {
-                'right': ['R_ground_force_vx', 'R_ground_force_vy', 
-                          'R_ground_force_vz'],
-                'left': ['L_ground_force_vx', 'L_ground_force_vy', 
-                         'L_ground_force_vz'],
-                'all': ['R_ground_force_vx', 'R_ground_force_vy', 
-                        'R_ground_force_vz','L_ground_force_vx', 
-                        'L_ground_force_vy', 'L_ground_force_vz']},
+            #     'right': ['R_ground_force_vx', 'R_ground_force_vy', 
+            #               'R_ground_force_vz'],
+            #     'left': ['L_ground_force_vx', 'L_ground_force_vy', 
+            #              'L_ground_force_vz'],
+            #     'all': ['R_ground_force_vx', 'R_ground_force_vy', 
+            #             'R_ground_force_vz','L_ground_force_vx', 
+            #             'L_ground_force_vy', 'L_ground_force_vz']},
+            # 'COP': {
+            #     'right': ['R_ground_force_px', 'R_ground_force_py', 
+            #               'R_ground_force_pz'],
+            #     'left': ['L_ground_force_px', 'L_ground_force_py', 
+            #              'L_ground_force_pz'],
+            #     'all': ['R_ground_force_px', 'R_ground_force_py', 
+            #             'R_ground_force_pz','L_ground_force_px', 
+            #             'L_ground_force_py', 'L_ground_force_pz']},
+            # 'torques': {
+            #     'right': ['R_ground_torque_x', 'R_ground_torque_y', 
+            #               'R_ground_torque_z'],
+            #     'left': ['L_ground_torque_x', 'L_ground_torque_y', 
+            #              'L_ground_torque_z'],
+            #     'all': ['R_ground_torque_x', 'R_ground_torque_y', 
+            #             'R_ground_torque_z', 'L_ground_torque_x', 
+            #             'L_ground_torque_y', 'L_ground_torque_z']}}}
+    
+            'right': ['2_ground_force_vx', '2_ground_force_vy', 
+                          '2_ground_force_vz'],
+                'left': ['3_ground_force_vx', '3_ground_force_vy', 
+                         '3_ground_force_vz'],
+                'all': ['2_ground_force_vx', '2_ground_force_vy', 
+                        '2_ground_force_vz','3_ground_force_vx', 
+                        '3_ground_force_vy', '3_ground_force_vz']},
             'COP': {
-                'right': ['R_ground_force_px', 'R_ground_force_py', 
-                          'R_ground_force_pz'],
-                'left': ['L_ground_force_px', 'L_ground_force_py', 
-                         'L_ground_force_pz'],
-                'all': ['R_ground_force_px', 'R_ground_force_py', 
-                        'R_ground_force_pz','L_ground_force_px', 
-                        'L_ground_force_py', 'L_ground_force_pz']},
+                'right': ['2_ground_force_px', '2_ground_force_py', 
+                          '2_ground_force_pz'],
+                'left': ['3_ground_force_px', '3_ground_force_py', 
+                         '3_ground_force_pz'],
+                'all': ['2_ground_force_px', '2_ground_force_py', 
+                        '2_ground_force_pz','3_ground_force_px', 
+                        '3_ground_force_py', '3_ground_force_pz']},
             'torques': {
-                'right': ['R_ground_torque_x', 'R_ground_torque_y', 
-                          'R_ground_torque_z'],
-                'left': ['L_ground_torque_x', 'L_ground_torque_y', 
-                         'L_ground_torque_z'],
-                'all': ['R_ground_torque_x', 'R_ground_torque_y', 
-                        'R_ground_torque_z', 'L_ground_torque_x', 
-                        'L_ground_torque_y', 'L_ground_torque_z']}}}
+                'right': ['2_ground_torque_x', '2_ground_torque_y', 
+                          '2_ground_torque_z'],
+                'left': ['3_ground_torque_x', '3_ground_torque_y', 
+                         '3_ground_torque_z'],
+                'all': ['2_ground_torque_x', '2_ground_torque_y', 
+                        '2_ground_torque_z', '3_ground_torque_x', 
+                        '3_ground_torque_y', '3_ground_torque_z']}}}
+    
     
     # Here we extract the GRFs and compute the GRMs wrt the ground origin.        
     GRF['df'] = {

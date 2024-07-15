@@ -78,6 +78,7 @@ class TRCFile(object):
         # Marker names.
         # The first and second column names are 'Frame#' and 'Time'.
         self.marker_names = fourth_line[2:]
+        # print(self.marker_names)
 
         len_marker_names = len(self.marker_names)
         if len_marker_names != self.num_markers:
@@ -97,8 +98,10 @@ class TRCFile(object):
         dtype = {'names': col_names,
                 'formats': ['int'] + ['float64'] * (3 * self.num_markers + 1)}
         usecols = [i for i in range(3 * self.num_markers + 1 + 1)]
-        self.data = np.loadtxt(fpath, delimiter='\t', skiprows=5, dtype=dtype,
-                               usecols=usecols)
+        self.data = np.loadtxt(fpath, delimiter='\t', skiprows=6, dtype=dtype,
+                               usecols=usecols) #original
+        # self.data = np.genfromtxt(fpath, delimiter='\t', skip_header=5, dtype=dtype,
+        #                        usecols=usecols, filling_values = np.nan)
         self.time = self.data['time']
 
         # Check the number of rows.

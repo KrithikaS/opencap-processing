@@ -828,7 +828,6 @@ def filter3DPointsButterworth(points3D,filtFreq,sampleFreq,order=4):
 
 def TRC2numpy(pathFile, markers,rotation=None):
     # rotation is a dict, eg. {'y':90} with axis, angle for rotation
-    
     trc_file = utilsTRC.TRCFile(pathFile)
     time = trc_file.time
     num_frames = time.shape[0]
@@ -895,10 +894,16 @@ def storage2numpy(storage_file, excess_header_entries=0):
 
 def storage2df(storage_file, headers):
     # Extract data
-    data = storage2numpy(storage_file)
-    out = pd.DataFrame(data=data['time'], columns=['time'])    
-    for count, header in enumerate(headers):
-        out.insert(count + 1, header, data[header])    
+    try:
+        data = storage2numpy(storage_file)
+        out = pd.DataFrame(data=data['time'], columns=['time'])    
+        for count, header in enumerate(headers):
+            out.insert(count + 1, header, data[header]) 
+    except:
+        # out = pd.DataFrame(data=np.zeros(''), columns=['time'])
+        out = pd.DataFrame()
+        for count, header in enumerate(headers):
+            out.insert(count + 1, header, 0) 
     
     return out
 

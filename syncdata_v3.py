@@ -54,8 +54,34 @@ filtFrequencies = {'walking': '_filt6Hz',
 
 sessionDetails = {
     'Data': {
-        'OpenCapData_S29': {}
-            }
+        # 'OpenCapData_S1': {}, #skipped
+        # 'OpenCapData_S2': {}, #skipped
+        'OpenCapData_S3': {}, #done
+        'OpenCapData_S4': {}, #SLS_L1 and SLS_L2 too trimmed error
+        'OpenCapData_S5': {}, #done
+        'OpenCapData_S6': {}, #done
+        'OpenCapData_S7': {}, #done
+        'OpenCapData_S8': {}, #done
+        'OpenCapData_S9': {}, #done
+        'OpenCapData_S10': {}, #done
+        'OpenCapData_S11': {}, #SLS_L2 too trimmed error
+        'OpenCapData_S12': {}, #done
+        'OpenCapData_S13': {}, #done
+        'OpenCapData_S14': {}, #done
+        # 'OpenCapData_S15': {}, #skipped
+        'OpenCapData_S16': {}, #done
+        'OpenCapData_S17': {}, #done
+        'OpenCapData_S18': {}, #done
+        'OpenCapData_S21': {}, #done
+        'OpenCapData_S22': {}, #SLS_L3 was missing from mocap
+        'OpenCapData_S23': {}, #done
+        'OpenCapData_S24': {}, #done
+        'OpenCapData_S25': {}, #done
+        'OpenCapData_S26': {}, #done
+        'OpenCapData_S28': {}, #done
+        'OpenCapData_S29': {}, #done
+        'OpenCapData_S30': {}, #done
+        }
 }
 
 # Set stationary vs traversing here
@@ -72,7 +98,7 @@ baseTrialMappingFile = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\HPL OpenCa
 videoParameters = {}
 videoParameters['0001'] = {}
 #name the originmarker trial to match the one in the stationary or traversing marker folder
-videoParameters['0001']['originName'] = 'Trimmed_origin000001.trc'
+videoParameters['0001']['originName'] = 'Trimmed_origin1.trc'
 videoParameters['0001']['r_fromMarker_toVideoOrigin_inLab'] = np.array(
     [0, 7, 0])  # mm in lab frame # this one is for large backwall 0001
 videoParameters['0001']['R_video_opensim'] = R.from_euler('y', -90, degrees=True)
@@ -119,19 +145,19 @@ def computeMarkerDifferences(trialName, mocapDir, videoTrcDir, markersMPJE, tria
     if filt_suffix == None:
         raise ValueError('motion_type not recognized')
     
-    forceMotPath = os.path.join(forceDir, mocapTrcfile[8:-4] + '_forces' + filt_suffix + '.mot') #!!! UPDATE THIS BASED ON FINAL ORGANIZATIONAL STRUCTURE
-    headers_force = ['1_ground_force_vx', '1_ground_force_vy', '1_ground_force_vz',
-                        '1_ground_force_px', '1_ground_force_py', '1_ground_force_pz',
-                        '1_ground_torque_x', '1_ground_torque_y', '1_ground_torque_z',
-                        '2_ground_force_vx', '2_ground_force_vy', '2_ground_force_vz',
-                        '2_ground_force_px', '2_ground_force_py', '2_ground_force_pz',
-                        '2_ground_torque_x', '2_ground_torque_y', '2_ground_torque_z',
-                        '3_ground_force_vx', '3_ground_force_vy', '3_ground_force_vz',
-                        '3_ground_force_px', '3_ground_force_py', '3_ground_force_pz',
-                        '3_ground_torque_x', '3_ground_torque_y', '3_ground_torque_z']
+    # forceMotPath = os.path.join(forceDir, mocapTrcfile[8:-4] + '_forces' + filt_suffix + '.mot') #!!! UPDATE THIS BASED ON FINAL ORGANIZATIONAL STRUCTURE
+    # headers_force = ['1_ground_force_vx', '1_ground_force_vy', '1_ground_force_vz',
+    #                     '1_ground_force_px', '1_ground_force_py', '1_ground_force_pz',
+    #                     '1_ground_torque_x', '1_ground_torque_y', '1_ground_torque_z',
+    #                     '2_ground_force_vx', '2_ground_force_vy', '2_ground_force_vz',
+    #                     '2_ground_force_px', '2_ground_force_py', '2_ground_force_pz',
+    #                     '2_ground_torque_x', '2_ground_torque_y', '2_ground_torque_z',
+    #                     '3_ground_force_vx', '3_ground_force_vy', '3_ground_force_vz',
+    #                     '3_ground_force_px', '3_ground_force_py', '3_ground_force_pz',
+    #                     '3_ground_torque_x', '3_ground_torque_y', '3_ground_torque_z']
 
-    forceData = ut.storage2df(forceMotPath, headers_force).to_numpy()[:, 1:]
-    forceTime = ut.storage2df(forceMotPath, headers_force).to_numpy()[:, 0]
+    # forceData = ut.storage2df(forceMotPath, headers_force).to_numpy()[:, 1:]
+    # forceTime = ut.storage2df(forceMotPath, headers_force).to_numpy()[:, 0]
 
     # Video-trc directory
     videoTrcPath = os.path.join(videoTrcDir, trialName + '.trc')
@@ -592,6 +618,9 @@ for subjectName in sessionDetails:
                 MPJE_markers = np.zeros((len(trialNames), len(markersMPJE)))
                 MPJE_offsetRemoved_markers = np.zeros((len(trialNames), len(markersMPJE)))
                 for idxTrial, trialName in enumerate(trialNames):
+                    # Set specific trial type here
+                    # if 'DJ' not in trialName:
+                    #     continue
 
                     try:
                         mocapFiltFreq = get_filt_frequency(trialName)

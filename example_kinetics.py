@@ -108,12 +108,12 @@ Please contact us for any questions: https://www.opencap.ai/#contact
 # We provide a few examples for overground and treadmill activities.
 # Select which example you would like to run.
 session_type = 'overground' # Options are 'overground' and 'treadmill'.
-session_id = "4d5c3eb1-1a59-4ea1-9178-d3634610561c"
-# session_id = "e742eb1c-efbc-4c17-befc-a772150ca84d"
+# session_id = "4d5c3eb1-1a59-4ea1-9178-d3634610561c"
+session_id = "e742eb1c-efbc-4c17-befc-a772150ca84d"
 case = '0' # Change this to compare across settings.
 # Options are 'squat', 'STS', and 'jump'.
 if session_type == 'overground': 
-    trial_name = 'squat'
+    trial_name = 'DLS2'
     if trial_name == 'squat': # Squat
         motion_type = 'squats'
         repetition = 0
@@ -123,10 +123,14 @@ if session_type == 'overground':
     elif trial_name == 'jump': # Jump  
         motion_type = 'jumping'
         time_window = [1.3, 2.2]
-    elif trial_name == 'SLDJ_L2': # Jump  
+    elif trial_name == 'SLDJ_L2': # Drop-Jump  
         motion_type = 'drop_jump_knee_adduction'
         time_window = [2.7, 3.7]
         contact_side = 'left'
+    elif trial_name == 'DLS2': # Squat with ka
+        motion_type = 'squats_ka'
+        time_window = [2.5, 4.5]
+        contact_side = 'all'
 # Options are 'walk_1_25ms', 'run_2_5ms', and 'run_4ms'.
 elif session_type == 'treadmill': 
     trial_name = 'walk_1_25ms'
