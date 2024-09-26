@@ -35,7 +35,7 @@ import utilsTRC
 from utilsAPI import get_api_url
 from utilsAuthentication import get_token
 import matplotlib.pyplot as plt
-from scipy.signal import gaussian, sosfiltfilt, butter
+from scipy.signal import gaussian, sosfiltfilt, butter, filtfilt
 
 
 API_URL = get_api_url()
@@ -315,12 +315,12 @@ def download_trial(trial_id, folder, session_id=None):
     os.makedirs(folder,exist_ok=True)
     
     # download model
-    get_model_and_metadata(session_id, folder)
+    modelName = get_model_and_metadata(session_id, folder)
     
     # download trc and mot
     get_motion_data(trial_id,folder)
     
-    return trial['name']
+    return trial['name'], modelName
 
 
 # Get trial ID from name.
@@ -766,13 +766,15 @@ def cross_corr(y1, y2,multCorrGaussianStd=None,visualize=False):
         
     y1_auto_corr = np.dot(y1, y1) / len(y1)
     y2_auto_corr = np.dot(y2, y2) / len(y1)
-    corr = np.correlate(y1, y2, mode='same')
+    corr = np.correlate(y1, y2, mode='same') # orig
+    # print("corr shape", corr.shape)
+    # print("corr nan", np.where(np.isnan(corr)))
     # The unbiased sample size is N - lag.
     unbiased_sample_size = np.correlate(np.ones(len(y1)), np.ones(len(y1)), mode='same')
     corr = corr / unbiased_sample_size / np.sqrt(y1_auto_corr * y2_auto_corr)
     shift = len(y1) // 2
-    max_corr = np.max(corr)
-    argmax_corr = np.argmax(corr)    
+    max_corr = np.nanmax(corr)
+    argmax_corr = np.nanargmax(corr)    
         
     if visualize:
         plt.figure()
@@ -786,7 +788,7 @@ def cross_corr(y1, y2,multCorrGaussianStd=None,visualize=False):
             plt.plot(corr,color=[.4,.4,.4])
             plt.legend(['corr','corr*gaussian'])  
     
-    argmax_corr = np.argmax(corr)
+    argmax_corr = np.nanargmax(corr)
     max_corr = np.nanmax(corr)
     
     lag = argmax_corr-shift
@@ -825,6 +827,19 @@ def filter3DPointsButterworth(points3D,filtFreq,sampleFreq,order=4):
         points3D_out = sosfiltfilt(sos,points3D_out,axis=0)             
         
     return points3D_out
+
+def filterNumpyArray(array, time, cutoff_frequency=6, order=4):
+    
+    fs = np.round(1 / np.mean(np.diff(time)), 6)
+    fc = cutoff_frequency
+    w = fc / (fs / 2)
+    b, a = butter(order/2, w, 'low')  
+    arrayFilt = filtfilt(
+        b, a, array, axis=0, 
+        padtype='odd', padlen=3*(max(len(b),len(a))-1))    
+    # print('numpy array filtered at {}Hz.'.format(cutoff_frequency)) 
+    
+    return arrayFilt
 
 def TRC2numpy(pathFile, markers,rotation=None):
     # rotation is a dict, eg. {'y':90} with axis, angle for rotation

@@ -98,10 +98,11 @@ class TRCFile(object):
         dtype = {'names': col_names,
                 'formats': ['int'] + ['float64'] * (3 * self.num_markers + 1)}
         usecols = [i for i in range(3 * self.num_markers + 1 + 1)]
-        self.data = np.loadtxt(fpath, delimiter='\t', skiprows=6, dtype=dtype,
-                               usecols=usecols) #original
-        # self.data = np.genfromtxt(fpath, delimiter='\t', skip_header=5, dtype=dtype,
-        #                        usecols=usecols, filling_values = np.nan)
+        # self.data = np.loadtxt(fpath, delimiter='\t', skiprows=6, dtype=dtype,
+        #                        usecols=usecols) #original
+        self.data = np.genfromtxt(fpath, delimiter='\t', skip_header=6, dtype=dtype,
+                               usecols=usecols, filling_values = 0, names = col_names)
+        self.data.dtype.names = col_names        
         self.time = self.data['time']
 
         # Check the number of rows.

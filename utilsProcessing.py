@@ -27,8 +27,10 @@ import logging
 import opensim
 import numpy as np
 from scipy import signal
+from scipy.signal import find_peaks, peak_widths
 import matplotlib.pyplot as plt
-from utils import storage_to_dataframe, download_trial, get_trial_id
+from utils import storage_to_dataframe, download_trial, get_trial_id, numpy2TRC, filterNumpyArray
+from utilsTRC import TRCFile
 
 def lowPassFilter(time, data, lowpass_cutoff_frequency, order=4):
     
@@ -38,6 +40,21 @@ def lowPassFilter(time, data, lowpass_cutoff_frequency, order=4):
     dataFilt = signal.sosfiltfilt(sos, data, axis=0)
 
     return dataFilt
+
+def get_filt_frequency(trialName):
+    # Hard-code filter frequencies based on the activity
+    if 'LS' in trialName: # squat
+        return 4
+    elif 'DJ' in trialName: # drop-jump
+        return 30
+    elif 'DC' in trialName: # drop-cut
+        return 50
+    elif 'TH' in trialName: # triple hop
+        return 50
+    elif 'C9' in trialName: # run-cut
+        return 60
+    else: # keep the previous settings
+        return None
 
 # %% Segment gait
 def segment_gait(session_id, trial_name, data_folder, gait_cycles_from_end=0):
@@ -52,60 +69,140 @@ def segment_gait(session_id, trial_name, data_folder, gait_cycles_from_end=0):
     return heelstrikeTimes, gait
 
 # %% Segment squats.
-# DEPRACTED: use squat_analysis instead.
-def segment_squats(ikFilePath, pelvis_ty=None, timeVec=None, visualize=False,
-                  filter_pelvis_ty=True, cutoff_frequency=4, height=.2):
+# # DEPRACTED: use squat_analysis instead.
+# def segment_squats(ikFilePath, pelvis_ty=None, timeVec=None, visualize=False,
+#                   filter_pelvis_ty=True, cutoff_frequency=4, height=.2):
     
-    # TODO: eventually, this belongs in a squat_analysis class and should take
-    # the form of segment_gait
+#     # TODO: eventually, this belongs in a squat_analysis class and should take
+#     # the form of segment_gait
     
+#     # Extract pelvis_ty if not given.
+#     if pelvis_ty is None and timeVec is None:
+#         ikResults = storage_to_dataframe(ikFilePath,headers={'pelvis_ty'})
+#         timeVec = ikResults['time']
+#         if filter_pelvis_ty:
+#             pelvis_ty = filterNumpyArray(
+#                 ikResults['pelvis_ty'].to_numpy(), timeVec.to_numpy(), 
+#                 cutoff_frequency=cutoff_frequency)
+#         else:
+#             pelvis_ty = ikResults['pelvis_ty']    
+#     dt = timeVec[1] - timeVec[0]
+
+#     # Identify minimums.
+#     pelvSignal = np.array(-pelvis_ty - np.min(-pelvis_ty))
+#     pelvSignalPos = np.array(pelvis_ty - np.min(pelvis_ty))
+#     idxMinPelvTy,_ = signal.find_peaks(pelvSignal,distance=.7/dt,height=height)
+    
+#     # Find the max adjacent to all of the minimums.
+#     minIdxOld = 0
+#     startFinishInds = []
+#     for i, minIdx in enumerate(idxMinPelvTy):
+#         if i<len(idxMinPelvTy)-1:
+#             nextIdx = idxMinPelvTy[i+1]
+#         else:
+#             nextIdx = len(pelvSignalPos)
+#         startIdx = np.argmax(pelvSignalPos[minIdxOld:minIdx]) + minIdxOld
+#         endIdx = np.argmax(pelvSignalPos[minIdx:nextIdx]) + minIdx
+#         startFinishInds.append([startIdx,endIdx])
+#         minIdxOld = np.copy(minIdx)
+#     startFinishTimes = [timeVec[i].tolist() for i in startFinishInds]
+    
+#     if visualize:
+#         plt.figure()     
+#         plt.plot(-pelvSignal)
+#         for c_v, val in enumerate(startFinishInds):
+#             plt.plot(val, -pelvSignal[val], marker='o', markerfacecolor='k',
+#                      markeredgecolor='none', linestyle='none',
+#                      label='Squatting phase')
+#             if c_v == 0:
+#                 plt.legend()
+#         plt.xlabel('Frames')
+#         plt.ylabel('Position [m]')
+#         plt.title('Vertical pelvis position')
+#         plt.draw()
+    
+#     return startFinishTimes
+
+# Brought in from squat_analysis
+def segment_squat(ikFilePath, pelvis_ty = None, timeVec = None, filter_pelvis_ty=True, cutoff_frequency=4, peak_proportion_threshold=0.7, 
+                      peak_width_rel_height=0.95, peak_distance_sec=0.5, visualizeSegmentation=False):
+
     # Extract pelvis_ty if not given.
     if pelvis_ty is None and timeVec is None:
         ikResults = storage_to_dataframe(ikFilePath,headers={'pelvis_ty'})
         timeVec = ikResults['time']
         if filter_pelvis_ty:
-            from utilsOpenSimAD import filterNumpyArray
             pelvis_ty = filterNumpyArray(
                 ikResults['pelvis_ty'].to_numpy(), timeVec.to_numpy(), 
                 cutoff_frequency=cutoff_frequency)
         else:
-            pelvis_ty = ikResults['pelvis_ty']    
-    dt = timeVec[1] - timeVec[0]
+            pelvis_ty = ikResults['pelvis_ty']
+
+    dt = np.mean(np.diff(timeVec))
 
     # Identify minimums.
     pelvSignal = np.array(-pelvis_ty - np.min(-pelvis_ty))
-    pelvSignalPos = np.array(pelvis_ty - np.min(pelvis_ty))
-    idxMinPelvTy,_ = signal.find_peaks(pelvSignal,distance=.7/dt,height=height)
+    pelvRange = np.abs(np.max(pelvis_ty) - np.min(pelvis_ty))
+    peakThreshold = peak_proportion_threshold * pelvRange
+    idxMinPelvTy,_ = find_peaks(pelvSignal, prominence=peakThreshold,
+                                distance=peak_distance_sec/dt)
+    peakWidths = peak_widths(pelvSignal, idxMinPelvTy, 
+                                rel_height=peak_width_rel_height)
     
-    # Find the max adjacent to all of the minimums.
-    minIdxOld = 0
-    startFinishInds = []
-    for i, minIdx in enumerate(idxMinPelvTy):
-        if i<len(idxMinPelvTy)-1:
-            nextIdx = idxMinPelvTy[i+1]
-        else:
-            nextIdx = len(pelvSignalPos)
-        startIdx = np.argmax(pelvSignalPos[minIdxOld:minIdx]) + minIdxOld
-        endIdx = np.argmax(pelvSignalPos[minIdx:nextIdx]) + minIdx
-        startFinishInds.append([startIdx,endIdx])
-        minIdxOld = np.copy(minIdx)
-    startFinishTimes = [timeVec[i].tolist() for i in startFinishInds]
+    # Store start and end indices.
+    startEndIdxs = []
+    for start_ips, end_ips in zip(peakWidths[2], peakWidths[3]):
+        startEndIdxs.append([start_ips, end_ips])
+    startEndIdxs = np.rint(startEndIdxs).astype(int)
+        
+    # Store start and end event times
+    eventTimes = []
+    for idxs in startEndIdxs:
+        eventTimes.append([timeVec[idxs[0]], timeVec[idxs[1]]])
     
-    if visualize:
-        plt.figure()     
-        plt.plot(-pelvSignal)
-        for c_v, val in enumerate(startFinishInds):
-            plt.plot(val, -pelvSignal[val], marker='o', markerfacecolor='k',
-                     markeredgecolor='none', linestyle='none',
-                     label='Squatting phase')
-            if c_v == 0:
-                plt.legend()
-        plt.xlabel('Frames')
-        plt.ylabel('Position [m]')
-        plt.title('Vertical pelvis position')
-        plt.draw()
+    # if visualizeSegmentation:
+    plt.figure()     
+    plt.plot(-pelvSignal)
+    for c_v, val in enumerate(startEndIdxs):
+        plt.plot(val, -pelvSignal[val], marker='o', markerfacecolor='k',
+                markeredgecolor='none', linestyle='none',
+                label='Start/End rep')
+        if c_v == 0:
+            plt.legend()
+    plt.hlines(-peakWidths[1], peakWidths[2], peakWidths[3], color='k',
+                label='peak start/end')
+    plt.xlabel('Frames')
+    plt.ylabel('Position [m]')
+    plt.title('Vertical pelvis position')
+    plt.draw()
+    plt.show()
     
-    return startFinishTimes
+    
+    # # Detect squat type (double leg, single leg right, single leg left)
+    # # Use toe markers
+    # eventTypes = []
+    # markersDict = self.markerDict['markers']
+    
+    # for eventIdx in startEndIdxs:
+    #     lToeYMean = np.mean(markersDict['L_toe_study'][eventIdx[0]:eventIdx[1]+1, 1])
+    #     rToeYMean = np.mean(markersDict['r_toe_study'][eventIdx[0]:eventIdx[1]+1, 1])
+        
+    #     if lToeYMean - rToeYMean > toe_height_threshold:
+    #         eventTypes.append('single_leg_r')
+    #     elif rToeYMean - lToeYMean > toe_height_threshold:
+    #         eventTypes.append('single_leg_l')
+    #     else:
+    #         eventTypes.append('double_leg')
+    
+    # Output.
+    squatEvents = {
+        'eventIdxs': startEndIdxs,
+        'eventTimes': eventTimes,
+        'eventNames':['repStart','repEnd'],
+        # 'eventTypes': eventTypes,
+        }
+    
+    return squatEvents
 
 # %% Segment sit-to-stands.
 '''
@@ -129,7 +226,7 @@ def segment_STS(ikFilePath, pelvis_ty=None, timeVec=None, velSeated=0.3,
         ikResults = storage_to_dataframe(ikFilePath,headers={'pelvis_ty'})
         timeVec = ikResults['time']
         if filter_pelvis_ty:
-            from utilsOpenSimAD import filterNumpyArray
+            
             pelvis_ty = filterNumpyArray(
                 ikResults['pelvis_ty'].to_numpy(), timeVec.to_numpy(), 
                 cutoff_frequency=cutoff_frequency)
@@ -223,6 +320,35 @@ def segment_STS(ikFilePath, pelvis_ty=None, timeVec=None, velSeated=0.3,
     return (risingTimes, risingTimesDelayedStart, 
             risingSittingTimesDelayedStartPeriodicEnd)
 
+def crop_to_roi(ikFilePath, trialName):
+    # Returns a list of starts and stops in MOCAP time
+    # ikFilePath = os.path.join(pathKinematicsFolder, trialName)
+    print(ikFilePath)
+    if 'LS' in trialName: # squat
+        
+        squatEvents = segment_squat(ikFilePath, pelvis_ty = None, timeVec = None, filter_pelvis_ty=True, cutoff_frequency=4, peak_proportion_threshold=0.7, 
+                      peak_width_rel_height=0.95, peak_distance_sec=0.5, visualizeSegmentation=False)
+        # print(squatEvents)
+        t_start = [t[0] for t in squatEvents['eventTimes']]
+        t_end = [t[1] for t in squatEvents['eventTimes']]
+        
+    elif 'DJ' in trialName: # drop-jump
+        t_start = None
+        t_end = None
+    elif 'DC' in trialName: # drop-cut
+        t_start = None
+        t_end = None
+    elif 'TH' in trialName: # triple hop
+        t_start = None
+        t_end = None
+    elif 'C9' in trialName: # run-cut
+        t_start = None
+        t_end = None
+    else: # keep the previous settings
+        t_start = None
+        t_end = None
+    
+    return t_start, t_end
 # %% Generate model with adjusted muscle wrapping to prevent unrealistic
 # wrapping giving rise to bad muscle-tendon lengths and moment arms. Changes
 # are made for the gmax1, iliacus, and psoas. Changes are documented in
@@ -632,3 +758,184 @@ def generate_model_with_contacts(
     model.initSystem()
     model.printToXML(pathOutputModel)
 
+def align_markers_with_ground_3(sessionDir, trialName,
+                                referenceMarker='Neck',
+                                suffixOutputFileName='aligned',
+                                lowpass_cutoff_frequency_for_marker_values=-1,
+                                addOffset=True, visualize=False, angle=None,
+                                select_window=[]):
+
+    pathTRCFile = os.path.join(sessionDir, 'MarkerData', trialName + '.trc')
+    trc_file = TRCFile(pathTRCFile)
+    time = trc_file.time
+
+    # Find index in time vector corresponding to the start and end of the trial
+    # as defined in select_window. Start is given by first entry in select_window
+    # and end is given by the second entry. If the entry is -1 then the start or
+    # end of the trial is used. If select_window is empty then skip this step.
+    use_select_window  = False
+    if len(select_window) > 0:
+        if select_window[0] == -1:
+            start = 0
+        else:
+            start = np.argmin(np.abs(time-select_window[0]))
+        if select_window[1] == -1:
+            end = len(time)
+        else:
+            end = np.argmin(np.abs(time-select_window[1]))+1
+
+        markers = trc_file.marker_names
+        marker_data = np.zeros((len(time), 3*len(markers)))
+        # marker_data[:,0] = time
+        for i, marker in enumerate(markers):
+            marker_data[:,3*i:3*i+3] = trc_file.marker(marker)
+        marker_data_adj = marker_data[start:end,:]
+
+        pathTRCFile_out = os.path.join(
+            sessionDir, 'MarkerData', 
+            trialName + '_{}.trc'.format('trimmed'))
+
+        with open(pathTRCFile_out,"w") as f:
+            numpy2TRC(f, marker_data_adj, markers, trc_file.camera_rate, time[start])
+            
+        trc_file = TRCFile(pathTRCFile_out)
+        time = trc_file.time
+        
+        use_select_window = True
+
+    # Extract data from reference markers.
+    m = trc_file.marker(referenceMarker)
+    if lowpass_cutoff_frequency_for_marker_values > 0:
+        m = lowPassFilter(time, m, lowpass_cutoff_frequency_for_marker_values)
+        
+    # spline = interpolate.InterpolatedUnivariateSpline(time, m[:,1], k=3)
+    # splineD1 = spline.derivative(n=1)
+    # mid_m_speed = splineD1(time)
+        
+    if use_select_window:
+        cutEnd = False
+    else:
+        cutEnd = True
+    if cutEnd:
+        sf = trc_file.camera_rate
+        end_offset = -int(0.3*sf)
+    else:
+        end_offset = len(time)
+        
+    cutStart = True
+    if cutStart:
+        sf = trc_file.camera_rate
+        start_offset = -int(2.3*sf)
+    else:
+        start_offset = len(time)
+        
+    # trim m and time
+    m = m[start_offset:end_offset,:]
+    time = time[start_offset:end_offset]
+
+        
+    if visualize:
+        plt.figure()
+        plt.plot(time, m[:,1])
+        # plt.plot(time[:end_offset], mid_m_speed[:end_offset])
+        # plt.plot(time, center_of_mass_speeds['y'])
+        # plt.plot(time, mid_m_speed_filt)
+        plt.xlabel('Time (s)')
+        plt.ylabel('Position (m)')
+        plt.title('Vertical position of {}'.format(referenceMarker))
+        plt.show()
+        
+        
+        # fig, ax1 = plt.subplots()
+        # plt.plot(time[:end_offset], m[:end_offset, 1], label='Position')
+        # ax1.set_xlabel('Time (s)')
+        # ax1.set_ylabel('Position (m)', color='tab:blue')
+        # plt.title('Vertical position of {}'.format(referenceMarker))
+        # ax1.tick_params(axis='y', labelcolor='tab:blue')
+        
+        # ax2 = ax1.twinx()
+        # plt.plot(time[:end_offset], mid_m_speed[:end_offset], 'r', label='Speed')
+        # ax2.set_ylabel('Speed', color='tab:red')
+        # ax2.tick_params(axis='y', labelcolor='tab:red')
+        
+        # fig.tight_layout()  # Ensures that the labels do not overlap
+        
+        # plt.show()
+        
+        
+        
+    # spline = interpolate.InterpolatedUnivariateSpline(time, mid_m[:,1], k=3)
+    # splineD1 = spline.derivative(n=1)
+    # mid_m_speed = splineD1(time)
+    
+    if angle is None:
+
+        # We assume peak vertical speeds should match across gait cycles.
+        peaks, _ = signal.find_peaks(m[:,1], distance=20, width=10, prominence=0.02)
+        
+        if peaks.shape[0] == 0:
+            raise ValueError("No peaks detected")
+        
+        # time[peaks]
+        
+        # The beginning of the trial is not always great, we here select the gait
+        # cycles that have similar durations (+/-20%).
+        # diff_peaks = np.diff([peaks])    
+        # for i in range(len(diff_peaks[0])-2, len(diff_peaks[0])-4, -1):
+        #     if np.abs(diff_peaks[0][i]-diff_peaks[0][i+1]) > 0.2*diff_peaks[0][i+1]:
+        #         break
+        
+        # Extract marker data at first and last peaks.
+        pos_start = m[peaks[0], :]
+        pos_end = m[peaks[-1], :]
+        
+        # Calculate the original vector.
+        original_vector = pos_end - pos_start
+    
+        # The reference vector is the vector along the x-axis.
+        reference_vector = np.array([1, 0, 0])
+        
+        # Calculate the dot product of the two vectors.
+        dot_product = np.dot(reference_vector, original_vector)
+        
+        # Calculate the magnitudes (lengths) of the vectors.
+        magnitude_A = np.linalg.norm(reference_vector)
+        magnitude_B = np.linalg.norm(original_vector)
+        
+        # Calculate the angle between the two vectors in radians.
+        angle_rad = np.arccos(dot_product / (magnitude_A * magnitude_B))
+        
+        # Convert the angle from radians to degrees if needed.
+        angle_deg = np.degrees(angle_rad)
+        
+    else:
+        
+        angle_deg = angle
+    
+    # Rotate marker data about the z-axis.
+    trc_file.rotate('z', angle_deg)
+    
+    print('Angle between reference vector and original vector: {:.2f} deg'.format(angle_deg))
+    
+    if addOffset:
+        # Compute offset
+        markers = trc_file.marker_names
+        offset = float('inf')
+        # Cut off last 0.5s to avoid issues with the end of the trial.
+        
+        for marker in markers:
+            if '_study' in marker:
+                min_y_pos = np.min(trc_file.marker(marker)[start_offset:end_offset,1])
+                if min_y_pos < offset:
+                    offset = min_y_pos                
+        # Subtract offset
+        trc_file.offset('y', -offset)
+    # trc_file.offset('y', -(pos_end[1]-0.03))       
+
+    # Print a new trc file.
+    pathTRCFile_out = os.path.join(
+        sessionDir, 'MarkerData', 
+        trialName + '_{}.trc'.format(suffixOutputFileName))
+    trc_file.write(pathTRCFile_out)
+
+    return pathTRCFile_out
