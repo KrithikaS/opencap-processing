@@ -54,41 +54,45 @@ filtFrequencies = {'walking': '_filt6Hz',
 
 sessionDetails = {
     'Data': {
-        # 'OpenCapData_S1': {}, #skipped
-        # 'OpenCapData_S2': {}, #skipped
-        'OpenCapData_S3': {}, #done
-        'OpenCapData_S4': {}, #SLS_L1 and SLS_L2 too trimmed error
-        'OpenCapData_S5': {}, #done
-        'OpenCapData_S6': {}, #done
+        # 'OpenCapData_S1': {}, #done + checked
+        # 'OpenCapData_S2': {}, #done + checked
+        # 'OpenCapData_S3': {}, #done + checked
+        # 'OpenCapData_S4': {}, #SLS_L1 and SLS_L2 too trimmed error --- INCORRECT MOCAP DATA SYNC NOT WORKING
+        # 'OpenCapData_S5': {}, #done + checked
+        # 'OpenCapData_S6': {}, #done - A FEW BAD TRIALS IN STATIONARY SET
         'OpenCapData_S7': {}, #done
-        'OpenCapData_S8': {}, #done
-        'OpenCapData_S9': {}, #done
-        'OpenCapData_S10': {}, #done
-        'OpenCapData_S11': {}, #SLS_L2 too trimmed error
-        'OpenCapData_S12': {}, #done
-        'OpenCapData_S13': {}, #done
-        'OpenCapData_S14': {}, #done
-        # 'OpenCapData_S15': {}, #skipped
-        'OpenCapData_S16': {}, #done
-        'OpenCapData_S17': {}, #done
-        'OpenCapData_S18': {}, #done
-        'OpenCapData_S21': {}, #done
-        'OpenCapData_S22': {}, #SLS_L3 was missing from mocap
-        'OpenCapData_S23': {}, #done
-        'OpenCapData_S24': {}, #done
-        'OpenCapData_S25': {}, #done
-        'OpenCapData_S26': {}, #done
-        'OpenCapData_S28': {}, #done
-        'OpenCapData_S29': {}, #done
-        'OpenCapData_S30': {}, #done
+        # 'OpenCapData_S8': {}, #done
+        # 'OpenCapData_S9': {}, #done
+        # 'OpenCapData_S10': {}, #done
+        # 'OpenCapData_S11': {}, #SLS_L2 too trimmed error
+        # 'OpenCapData_S12': {}, #done
+        # 'OpenCapData_S13': {}, #done
+        # 'OpenCapData_S14': {}, #done
+        # 'OpenCapData_S15': {}, #done
+        # 'OpenCapData_S16': {}, #done
+        # 'OpenCapData_S17': {}, #done
+        # 'OpenCapData_S18': {}, #done
+        # 'OpenCapData_S21': {}, #done
+        # 'OpenCapData_S22': {}, #SLS_L3 too trimmed error
+        # 'OpenCapData_S23': {}, #done
+        # 'OpenCapData_S24': {}, #done
+        # 'OpenCapData_S25': {}, #done
+        # 'OpenCapData_S26': {}, #done
+        # 'OpenCapData_S28': {}, #done
+        # 'OpenCapData_S29': {}, #done
+        # 'OpenCapData_S30': {}, #done
         }
 }
 
 # Set stationary vs traversing here
 is_stationary = True
+# CHECK LINE 625 TO SET ACTIVITY!! - FIX THIS LATER!!
 
 # %% Paths to data dir.
-dataDir = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\OpenCap Subject Data\InLabStationary" # OpenCap location after batchdownload
+if is_stationary:
+    dataDir = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\OpenCap Subject Data\InLabStationary" # OpenCap location after batchdownload
+else:
+    dataDir = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\OpenCap Subject Data\InLabTraversing" # OpenCap location after batchdownload
 basemocapDir = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\MOCAP OpenSim Pipeline" # MoCap location on GDrive
 baseTrialMappingFile = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\HPL OpenCap_ACL_MarkerEditingSheet_Excel.xlsx" # MoCap location on GDrive
 
@@ -106,7 +110,7 @@ videoParameters['0001']['R_video_opensim'] = R.from_euler('y', -90, degrees=True
 videoParameters['0001']['R_opensim_xForward'] = R.from_euler('z', 90, degrees=True) # Original
 
 videoParameters['0002'] = {}
-videoParameters['0002']['originName'] = 'Trimmed_origin000002.trc'
+videoParameters['0002']['originName'] = 'Trimmed_origin2.trc'
 videoParameters['0002']['r_fromMarker_toVideoOrigin_inLab'] = np.array(
     [-7, 0, 0])  # mm in lab frame # this one is for large backwall 0001
 videoParameters['0002']['R_video_opensim'] = R.from_euler('y', 0, degrees=True)
@@ -229,6 +233,7 @@ def computeMarkerDifferences(trialName, mocapDir, videoTrcDir, markersMPJE, tria
     idx_min = np.argmin(outputMPJE_all)
 
     if idx_min == 0:
+        print("Using abs sum error")
         MPJE_mean = outputMPJE_markerError_abs['MPJE_mean']
         MPJE_std = outputMPJE_markerError_abs['MPJE_std']
         MPJE_offsetRemoved_mean = outputMPJE_markerError_abs['MPJE_offsetRemoved_mean']
@@ -243,6 +248,7 @@ def computeMarkerDifferences(trialName, mocapDir, videoTrcDir, markersMPJE, tria
         timeVecVideoAll = outputMPJE_markerError_abs['timeVecVideoAll']
         videoDataAll = outputMPJE_markerError_abs['videoDataAll']
     elif idx_min == 1:
+        print("Using norm error")
         MPJE_mean = outputMPJE_markerError_norm['MPJE_mean']
         MPJE_std = outputMPJE_markerError_norm['MPJE_std']
         MPJE_offsetRemoved_mean = outputMPJE_markerError_norm['MPJE_offsetRemoved_mean']
@@ -257,6 +263,7 @@ def computeMarkerDifferences(trialName, mocapDir, videoTrcDir, markersMPJE, tria
         timeVecVideoAll = outputMPJE_markerError_norm['timeVecVideoAll']
         videoDataAll = outputMPJE_markerError_abs['videoDataAll']
     elif idx_min == 2:
+        print("Using vertical velocity error")
         MPJE_mean = outputMPJE_verticalVelocity['MPJE_mean']
         MPJE_std = outputMPJE_verticalVelocity['MPJE_std']
         MPJE_offsetRemoved_mean = outputMPJE_verticalVelocity['MPJE_offsetRemoved_mean']
@@ -439,7 +446,7 @@ def getMPJEs(lag, trialName, videoTime, mocapTime, mocapTRC, mocapData,
     if len(videoTime) < len(mocapTime):# and 'running' in trialName:
         MPJE = np.nan
         MPJE_offsetRemoved = np.nan
-        print('{} too trimmed'.format(trialName))
+        print('{} too trimmed, mocap is {} frames ({} seconds) and opencap is {} frames'.format(trialName, len(mocapTime), mocapTime[-1], len(videoTime)))
         return MPJE, MPJE_offsetRemoved
     videoTime = videoTime + lag / mocapTRC.camera_rate
 
@@ -609,6 +616,9 @@ for subjectName in sessionDetails:
                 markersMPJE = ['c7', 'r_shoulder', 'l_shoulder', 'r.ASIS', 'l.ASIS', 'r.PSIS', 'l.PSIS', 'r_knee',
                                 'l_knee', 'r_ankle', 'l_ankle', 'r_calc', 'l_calc', 'r_toe', 'l_toe', 'r_5meta',
                                 'l_5meta']
+                # markersMPJE = ['r.ASIS', 'l.ASIS', 'r.PSIS', 'l.PSIS',
+                #                 'r_knee','l_knee', 'r_ankle', 'l_ankle', 'r_calc', 'l_calc',
+                #                 'r_toe', 'l_toe', 'r_5meta', 'l_5meta']
 
                 # Compute and save MPJE
                 MPJE_mean = np.zeros((len(trialNames)))
@@ -619,7 +629,7 @@ for subjectName in sessionDetails:
                 MPJE_offsetRemoved_markers = np.zeros((len(trialNames), len(markersMPJE)))
                 for idxTrial, trialName in enumerate(trialNames):
                     # Set specific trial type here
-                    # if 'DJ' not in trialName:
+                    # if 'LS' not in trialName:
                     #     continue
 
                     try:
