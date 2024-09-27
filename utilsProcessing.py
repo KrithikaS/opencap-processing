@@ -160,22 +160,22 @@ def segment_squat(ikFilePath, pelvis_ty = None, timeVec = None, filter_pelvis_ty
     for idxs in startEndIdxs:
         eventTimes.append([timeVec[idxs[0]], timeVec[idxs[1]]])
     
-    # if visualizeSegmentation:
-    plt.figure()     
-    plt.plot(-pelvSignal)
-    for c_v, val in enumerate(startEndIdxs):
-        plt.plot(val, -pelvSignal[val], marker='o', markerfacecolor='k',
-                markeredgecolor='none', linestyle='none',
-                label='Start/End rep')
-        if c_v == 0:
-            plt.legend()
-    plt.hlines(-peakWidths[1], peakWidths[2], peakWidths[3], color='k',
-                label='peak start/end')
-    plt.xlabel('Frames')
-    plt.ylabel('Position [m]')
-    plt.title('Vertical pelvis position')
-    plt.draw()
-    plt.show()
+    if visualizeSegmentation:
+        plt.figure()
+        plt.plot(-pelvSignal)
+        for c_v, val in enumerate(startEndIdxs):
+            plt.plot(val, -pelvSignal[val], marker='o', markerfacecolor='k',
+                    markeredgecolor='none', linestyle='none',
+                    label='Start/End rep')
+            if c_v == 0:
+                plt.legend()
+        plt.hlines(-peakWidths[1], peakWidths[2], peakWidths[3], color='k',
+                    label='peak start/end')
+        plt.xlabel('Frames')
+        plt.ylabel('Position [m]')
+        plt.title('Vertical pelvis position')
+        plt.draw()
+        plt.show()
     
     
     # # Detect squat type (double leg, single leg right, single leg left)

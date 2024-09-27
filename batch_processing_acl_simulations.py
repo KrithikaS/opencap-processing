@@ -62,7 +62,7 @@ sessionList = [
                 # In-Lab Stationary
                 # {'S1':'dc95f941-b377-4c0f-929f-c18fc3a202f1'},
                 # {'S2':'332f5657-efa0-454b-8f82-e63488096006'},
-                # {'S3':'d5ff6e67-c237-4000-86a4-47b10b31e33b'},
+                {'S3':'d5ff6e67-c237-4000-86a4-47b10b31e33b'},
                 {'S4':'53a6aaea-8059-414b-84ca-f4a0f4a777d5'},
                 {'S5':'78e028a0-a2c2-4a1a-b1c1-1013b13963ea'},
                 {'S6':'2adc93da-0853-40ef-8a7a-6aa15e4b2e2a'},
@@ -200,7 +200,13 @@ for trial in trials_info:
 
     # Crop to region of interest based on the MOCAP motion data (squats) or FP data (all else)
     # print(pathKinematicsFolder, trial_name)
-    t_start, t_end = crop_to_roi(mocapStoPath, trial_name) - t_delay
+    t_start, t_end = crop_to_roi(mocapStoPath, trial_name)
+    if t_start is not None:
+        t_start -= t_delay
+        t_end -= t_delay
+    else:
+        t_start = [dataTRC.time[0]] - t_delay
+        t_end = [dataTRC.time[-1]] - t_delay
     print(t_start, t_end)
 
     if runProblem:
