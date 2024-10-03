@@ -364,7 +364,8 @@ def run_tracking(baseDir, dataDir, subject, settings, case='0',
     # pathMocapFolder = os.path.join(pathSubjectData, "OpenSimDataMocap")
     # pathMocapIKFolder = os.path.join(pathMocapFolder, 'InverseKinematics')
     # pathMocapIDFolder = os.path.join(pathMocapFolder, 'InverseDynamics')
-    pathMocapFolder = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\MOCAP OpenSim Pipeline\S30"
+    pathMocapFolder = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\MOCAP OpenSim Pipeline\S30" #HARD-CODED
+    print("pathMocapFolder is hard coded - needs to be fixed")
     pathMocapIKFolder = os.path.join(pathMocapFolder, 'IK', 'Results_06_2024')
     pathMocapIDFolder = os.path.join(pathMocapFolder, 'ID', 'Results_06_2024')
     pathForceFolder = os.path.join(pathMocapFolder, 'Forces')

@@ -38,26 +38,26 @@ import subprocess
 import re
 
 from utils import (storage_to_numpy, storage_to_dataframe, 
-                   download_kinematics, import_metadata, numpy_to_storage)
-from utilsProcessing import (segment_squats, segment_STS, adjust_muscle_wrapping,
+                   download_kinematics, import_metadata, numpy_to_storage, filterNumpyArray)
+from utilsProcessing import (segment_squat, segment_STS, adjust_muscle_wrapping,
                              generate_model_with_contacts)
 from settingsOpenSimAD import get_setup
 
 from squat_analysis import squat_analysis
 
-# %% Filter numpy array.
-def filterNumpyArray(array, time, cutoff_frequency=6, order=4):
+# # %% Filter numpy array.
+# def filterNumpyArray(array, time, cutoff_frequency=6, order=4):
     
-    fs = np.round(1 / np.mean(np.diff(time)), 6)
-    fc = cutoff_frequency
-    w = fc / (fs / 2)
-    b, a = signal.butter(order/2, w, 'low')  
-    arrayFilt = signal.filtfilt(
-        b, a, array, axis=0, 
-        padtype='odd', padlen=3*(max(len(b),len(a))-1))    
-    # print('numpy array filtered at {}Hz.'.format(cutoff_frequency)) 
+#     fs = np.round(1 / np.mean(np.diff(time)), 6)
+#     fc = cutoff_frequency
+#     w = fc / (fs / 2)
+#     b, a = signal.butter(order/2, w, 'low')  
+#     arrayFilt = signal.filtfilt(
+#         b, a, array, axis=0, 
+#         padtype='odd', padlen=3*(max(len(b),len(a))-1))    
+#     # print('numpy array filtered at {}Hz.'.format(cutoff_frequency)) 
     
-    return arrayFilt
+#     return arrayFilt
 
 # %% Interpolate numpy array.
 def interpolateNumpyArray_time(data, time, tIn, tEnd, N): 
@@ -1913,14 +1913,15 @@ def download_file_2(url, file_name):
     
 # %% Plot results simulations.
 # TODO: simplify and clean up.
-def plotResultsOpenSimAD(dataDir, subject, motion_filename, settings,
+def plotResultsOpenSimAD(dataDir, subject, motion_filename, settings={},
                          cases=['default'], mainPlots=True):
     
     # %% Load optimal trajectories.
     pathOSData = os.path.join(dataDir, subject, 'OpenSimData')
     suff_path = ''
-    if 'repetition' in settings:
-        suff_path = '_rep' + str(settings['repetition'])
+    if settings:
+        if 'repetition' in settings:
+            suff_path = '_rep' + str(settings['repetition'])
     c_pathResults = os.path.join(pathOSData, 'Dynamics', 
                                  motion_filename + suff_path)    
     c_tr = np.load(os.path.join(c_pathResults, 'optimaltrajectories.npy'),
