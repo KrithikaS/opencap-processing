@@ -31,16 +31,15 @@ sys.path.append(opensimADDir)
 import json
 import numpy as np
 import pandas as pd
+import opensim
 
-from utils import get_trial_id, download_trial, TRC2numpy
+from utils import get_trial_id, download_trial, TRC2numpy, numpy_to_storage
 import utilsTRC as dm
 
-from utilsProcessing import align_markers_with_ground_3, get_filt_frequency, crop_to_roi
+from utilsProcessing import align_markers_with_ground_3, get_filt_frequency, lowPassFilter
 from utilsOpenSim import runIKTool
 
 from data_info import get_data_info, get_data_info_by_session, get_data_info_problems, get_data_select_previous_cycle, get_data_manual_alignment, get_data_select_window
-
-from utilsKinematics import kinematics
 
 # %% Paths.
 driveDir_synced = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\OpenCap Subject Data\InLabStationary" #HARD-CODED
@@ -55,7 +54,7 @@ baseTrialMappingFile = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\HPL OpenCa
 # Session List
 sessionList = [
                 # In-Lab Stationary
-                {'S1':'dc95f941-b377-4c0f-929f-c18fc3a202f1'},
+                # {'S1':'dc95f941-b377-4c0f-929f-c18fc3a202f1'},
                 # {'S2':'332f5657-efa0-454b-8f82-e63488096006'},
                 # {'S3':'d5ff6e67-c237-4000-86a4-47b10b31e33b'},
                 # {'S4':'53a6aaea-8059-414b-84ca-f4a0f4a777d5'},
@@ -81,7 +80,7 @@ sessionList = [
                 # {'S26':'b011b3e2-203a-4e98-87fd-c6ea4d95acbf'},
                 # {'S28':'af17abef-7507-48f6-941b-25d152d317ed'},
                 # {'S29':'d10751a5-7e94-495a-94d0-2dd229ca39e0'},
-                # {'S30':'e742eb1c-efbc-4c17-befc-a772150ca84d'},
+                {'S30':'e742eb1c-efbc-4c17-befc-a772150ca84d'},
 
                 # Traversing
                 # {'S1':'1443ed48-3cbe-4226-a2cc-bc34e21a0fb3'},
@@ -114,7 +113,6 @@ sessionList = [
                 ]
 
 # %% User-defined variables.
-legs = ['r','l']
 runProblem = True
 overwrite_aligned_data = False
     
@@ -175,14 +173,14 @@ for trial in trials_info:
 
     # Crop to region of interest based on the MOCAP motion data (squats) or FP data (all else)
     # print(pathKinematicsFolder, trial_name)
-    t_start, t_end = crop_to_roi(mocapStoPath, trial_name)
-    if t_start is not None:
-        t_start -= t_delay
-        t_end -= t_delay
-    else:
-        t_start = [dataTRC.time[0]] - t_delay
-        t_end = [dataTRC.time[-1]] - t_delay
-    print(t_start, t_end)
+    # t_start, t_end = crop_to_roi(mocapStoPath, trial_name)
+    # if t_start is not None:
+    #     t_start -= t_delay
+    #     t_end -= t_delay
+    # else:
+    t_start = [dataTRC.time[0]] - t_delay
+    t_end = [dataTRC.time[-1]] - t_delay
+    # print(t_start, t_end)
     select_window = [t_start, t_end]
 
     if runProblem:
@@ -220,7 +218,22 @@ for trial in trials_info:
                     'InverseKinematics', 'Setup_IK_KA.xml') # HARD-CODED - NEED TO FIX ONCE THIS IS FINALIZED; ALSO IS THIS BEING RE-RUN SINCE MARKERS ARE RE-ALIGNED?
                 pathScaledModel = os.path.join(sessionDir, 'OpenSimData', 'Model', modelName)
                 runIKTool(pathGenericSetupFile, pathScaledModel, pathTRCFile_out, pathKinematicsFolder)
+                
+                # Read in data to run lowPassFilter
+                motionPath = os.path.join(pathKinematicsFolder, '{}.mot'.format(trialName))
+                table = opensim.TimeSeriesTable(motionPath)
+                tableProcessor = opensim.TableProcessor(table)
+                columnLabels = list(table.getColumnLabels())
+                tableProcessor.append(opensim.TabOpUseAbsoluteStateNames())
+                time = np.asarray(table.getIndependentColumn())
+                data = table.getMatrix().to_numpy()
+                data_filt = lowPassFilter(time, data, filter_frequency)
+
+                # Add time back in and save to .sto file
+                data_filt = np.concatenate((np.expand_dims(time, axis=1), data_filt), axis=1)
+                columns = ['time'] + columnLabels
+                numpy_to_storage(columns, data_filt,  os.path.join(pathKinematicsFolder, 'ik_filtered_{}.sto'.format(trialName)), datatype='IK')
+                
             except Exception as e:
                 print(f"Error alignment trial {trial_id}: {e}")
                 continue
-
