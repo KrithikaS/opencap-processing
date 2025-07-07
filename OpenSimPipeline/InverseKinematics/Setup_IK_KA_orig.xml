@@ -34,109 +34,109 @@
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>50</weight>
+					<weight>25</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L.ASIS_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>50</weight>
+					<weight>25</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r.PSIS_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>50</weight>
+					<weight>25</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L.PSIS_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>50</weight>
+					<weight>25</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_knee_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_mknee_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
-					<apply>false</apply>
+					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_ankle_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_mankle_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
-					<apply>false</apply>
+					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_toe_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>5</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_5meta_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>5</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_calc_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>60</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_knee_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_mknee_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
-					<apply>false</apply>
+					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_ankle_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_mankle_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
-					<apply>false</apply>
+					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_toe_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>5</weight>
+					<weight>30</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_calc_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>15</weight>
+					<weight>60</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_5meta_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>5</weight>
+					<weight>30</weight>
 				</IKMarkerTask>                
                 <IKMarkerTask name="r_lelbow_study">
                     <!--Whether or not this task will be used during inverse kinematics solve, default is true.-->
@@ -190,73 +190,73 @@
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_thigh2_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_thigh3_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>				
 				<IKMarkerTask name="L_thigh1_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_thigh2_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_thigh3_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>				
 				<IKMarkerTask name="r_sh1_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_sh2_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="r_sh3_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>				
 				<IKMarkerTask name="L_sh1_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_sh2_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="L_sh3_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
 					<apply>true</apply>
 					<!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
-					<weight>20</weight>
+					<weight>4</weight>
 				</IKMarkerTask>
 				<IKMarkerTask name="RHJC_study">
 					<!--Whether or not this task will be used during inverse kinematics solve.-->
