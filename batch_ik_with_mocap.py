@@ -13,15 +13,10 @@ from utilsProcessing import get_filt_frequency, lowPassFilter
 from utilsOpenSim import runIKTool
 
 # %% Paths.
-driveDir_synced = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\OpenCap Subject Data\InLabStationary" #HARD-CODED
-# driveDir_synced = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\OpenCap Subject Data\InLabTraversing" #HARD-CODED
-
-dataDir = r"C:\Users\Krithika-PC\repos\ks-opencap-processing\opencap-processing" #HARD-CODED
+dataDir = r"C:\Users\kswami\repos\opencap-processing" #HARD-CODED
 dataFolder = os.path.join(dataDir, 'Data')
 
 basemocapDir = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\MOCAP OpenSim Pipeline" # MoCap location on GDrive HARD-CODED
-baseTrialMappingFile = r"G:\Shared drives\HPL_Drive\ACL OpenCap Study\HPL OpenCap_ACL_MarkerEditingSheet_Excel.xlsx" # MoCap location on GDrive HARD-CODED
-
 pathGenericSetupFile = os.path.join(baseDir, 'OpenSimPipeline', 'InverseKinematics', 'Setup_IK_Generic.xml')
 
 # Session List
@@ -88,11 +83,11 @@ subjList = [
 
 for subj in subjList:
     sid = list(subj.keys())[0]
-    pathScaledModel = os.path.join(basemocapDir, sid, 'Scaling', '{}_scaled.osim'.format(sid))
+    pathScaledModel = os.path.join(basemocapDir, sid, 'Scaling', '{}_scaled_JC_newDOFranges.osim'.format(sid))
     pathMarkerFiles = os.path.join(basemocapDir, sid, 'Motion', 'Filtered')
     markerFiles = [f for f in os.listdir(pathMarkerFiles) if os.path.isfile(os.path.join(pathMarkerFiles, f)) and f.endswith('.trc')]
 
-    pathKinematicsFolder = os.path.join(dataFolder, subj[sid], 'OpenSimData_Mocap', 'Kinematics')
+    pathKinematicsFolder = os.path.join(dataFolder, subj[sid], 'OpenSimData', 'Kinematics_MoCap')
     if not os.path.exists(pathKinematicsFolder):
         os.makedirs(pathKinematicsFolder)
     
@@ -102,19 +97,17 @@ for subj in subjList:
         pathTRCFile_out = os.path.join(pathMarkerFiles, m_file)
         
         trialName = m_file[17:-4] # HARD-CODED ASSUMPTION THAT ALL FILES START WITH FILTERED_ROTATED_
+        # if 'SLDJ' not in trialName:
+        #     continue
         lowpass_cutoff_frequency = get_filt_frequency(trialName)
         print("Processing trial: ", trialName, " with ", lowpass_cutoff_frequency, "Hz filter...")
 
-        # sys.path.append(pathScaledModel)
-        # sys.path.append(pathGenericSetupFile)
-        # sys.path.append(pathTRCFile_out)
-        # sys.path.append(pathKinematicsFolder)
         print("Running inverse kinematics...")
         runIKTool(pathGenericSetupFile, pathScaledModel, pathTRCFile_out, pathKinematicsFolder, IKFileName=trialName)
 
         # Read in data to run lowPassFilter
         motionPath = os.path.join(pathKinematicsFolder, '{}.mot'.format(trialName))
-        table = opensim.TimeSeriesTable(motionPath)        
+        table = opensim.TimeSeriesTable(motionPath)
         tableProcessor = opensim.TableProcessor(table)
         columnLabels = list(table.getColumnLabels())
         tableProcessor.append(opensim.TabOpUseAbsoluteStateNames())
