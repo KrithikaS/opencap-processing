@@ -42,16 +42,17 @@ def lowPassFilter(time, data, lowpass_cutoff_frequency, order=4):
     return dataFilt
 
 def get_filt_frequency(trialName):
+    print(trialName)
     # Hard-code filter frequencies based on the activity
-    if 'LS' in trialName: # squat
+    if any(a in trialName for a in ('LS', 'ls', 'ss', 'ds')): # squat
         return 4
-    elif 'DJ' in trialName: # drop-jump
+    elif any(a in trialName for a in ('DJ', 'dj')): # drop-jump
         return 30
-    elif 'DC' in trialName: # drop-cut
+    elif any(a in trialName for a in ('DC', 'dc')): # drop-cut
         return 50
     elif 'TH' in trialName: # triple hop
         return 50
-    elif 'C9' in trialName: # run-cut
+    elif any(a in trialName for a in ('C9', 'rc')): # run-cut
         return 60
     else: # keep the previous settings
         return None
